@@ -17,7 +17,7 @@ class Solution:
 
         self.reader()
 
-    def comment_handler(self, ind: int) -> None:
+    def comment_handler(self, ind: int) -> int:
         comment = []
         for i in range(ind + 1, len(self.data)):
             if "-->" in self.data[i]:
@@ -26,8 +26,7 @@ class Solution:
                     crash_handler(err)
 
                 self.vars.append({"type": "comment", "data": comment})
-                self.reader(i + 1)
-                return
+                return i
             else:
                 comment.append(self.data[i])
 
@@ -35,11 +34,12 @@ class Solution:
         crash_handler(err)
 
 
-    def reader(self, start_ind: int = 0) -> None:
-        for i in range(start_ind, len(self.data)):
+    def reader(self) -> None:
+        i = 0
+        while i < len(self.data):
+            print(self.data[i])
             if self.data[i] == "<!--":
-                self.comment_handler(i)
-                return
+                i = self.comment_handler(i)
             elif self.data[i][0].isalpha():
                 line = self.data[i]
                 col_ind = line.find(':')
@@ -52,6 +52,7 @@ class Solution:
                     err = f"Invalid variable name (line {i+1}): '{name}'"
                     crash_handler(err)
                 content_handler(content)
+            i += 1
 
 
 if __name__ == "__main__":
