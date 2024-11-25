@@ -8,7 +8,6 @@ def check_name(name: str) -> bool:
         return True
     return False
 
-
 class Solution:
     vars = []
 
@@ -16,6 +15,30 @@ class Solution:
         self.data = lines.splitlines()
 
         self.reader()
+
+    def check_string(self, content: str, ind: int) -> bool:
+        if content[1] != '"':
+            err = f'''Invalid syntax. Expected " after @. Line {ind+1}: '{self.data[ind]}' '''
+            crash_handler(err)
+        if content[-1] != '"':
+            err = f'''Invalid syntax. Missing closing ". Line {ind+1}: '{self.data[ind]}' '''
+            crash_handler(err)
+        return True
+
+    def check_numeral(self, content: str, ind: int) -> bool:
+        if not content.isdigit():
+            err = f"Invalid syntax. Invalid numeral: '{content}'. Line {ind+1}: '{self.data[ind]}'"
+            crash_handler(err)
+        return True
+
+    def mas_handler(self, content: str, ind: int) -> int:
+
+        contains = content.split(',')
+        i = 0
+        cur_line = ind
+        while i < len(contains):
+            contains[i] = contains[i].lstrip(' ').rstrip(' ')
+            self.content_handler("", contains[i])
 
     def comment_handler(self, ind: int) -> int:
         comment = []
@@ -33,6 +56,32 @@ class Solution:
         err = f"Closing symbol for <!-- (line {ind+1}) not found"
         crash_handler(err)
 
+    def content_handler(self, add_to: list, content: str, ind: int, name: str) -> int:
+        if not check_name(name):
+            err = f"Invalid variable name (line {ind+1}): '{name}'"
+            crash_handler(err)
+        content = content.lstrip(' ').rstrip(' ')
+        if content[0] == '@':
+            if self.check_string(content, ind):
+                if name != "":
+                    self.vars.append({"type": "str", "name": name, "content": content})
+                else:
+                    self.vars[-1]["content"].append({"type": "str", "content": content})
+                return ind
+        elif content[0].isdigit():
+            if self.check_numeral(content, ind):
+                if name != "":
+                    self.vars.append({"type": "int", "name": name, "content": content})
+                else:
+                    self.vars[-1]["content"].append({"type": "int", "content": content})
+                return ind
+        elif content[0] == '{':
+            if name != "":
+                self.vars.append({"type": "mas", "content": []})
+            else:
+                self.vars[-1].append({"type": "mas", "content": []})
+            ind_end = self.mas_handler(content, ind)
+
 
     def reader(self) -> None:
         i = 0
@@ -48,10 +97,7 @@ class Solution:
                     crash_handler(err)
 
                 name, content = line.split(':')
-                if not check_name(name):
-                    err = f"Invalid variable name (line {i+1}): '{name}'"
-                    crash_handler(err)
-                content_handler(content)
+                self.content_handler(name, content, i)
             i += 1
 
 
