@@ -8,6 +8,32 @@ def check_name(name: str) -> bool:
         return True
     return False
 
+def mas_split(line: str) -> list:
+    counts = {
+        "Strs": 0,
+        "Mases": -1
+    }
+    buff = ""
+    out = []
+    for i in line:
+        if i == ',' and counts["Strs"] == 0 and counts["Mases"] == 0:
+            out.append(buff)
+            buff = ""
+        else:
+            buff += i
+        if i == '"':
+            if counts["Strs"] == 1:
+                counts["Strs"] = 0
+            else:
+                counts["Strs"] = 1
+        elif i == '{' and counts["Strs"] == 0:
+            counts["Mases"] += 1
+        elif i == '}' and counts["Strs"] == 0:
+            counts["Mases"] -= 1
+    if buff != "":
+        out.append(buff)
+    return out
+
 class Solution:
     vars = []
 
@@ -31,14 +57,22 @@ class Solution:
             crash_handler(err)
         return True
 
-    def mas_handler(self, content: str, ind: int) -> int:
 
+
+
+    def mas_handler(self, add_to: list, content: str, ind: int) -> int:
         contains = content.split(',')
         i = 0
         cur_line = ind
         while i < len(contains):
             contains[i] = contains[i].lstrip(' ').rstrip(' ')
-            self.content_handler("", contains[i])
+            new_line = self.content_handler(add_to, contains[i], cur_line, "")
+            if contains[i][0] == '{':
+                closing_ind = -1
+                for j in range(i, len(contains)):
+                    if contains[j].find
+            elif contains[i][0] == '$':
+
 
     def comment_handler(self, ind: int) -> int:
         comment = []
@@ -57,36 +91,36 @@ class Solution:
         crash_handler(err)
 
     def content_handler(self, add_to: list, content: str, ind: int, name: str) -> int:
-        if not check_name(name):
+        name = name.lstrip(' ').rstrip(' ')
+        if name != "" and not check_name(name):
             err = f"Invalid variable name (line {ind+1}): '{name}'"
             crash_handler(err)
         content = content.lstrip(' ').rstrip(' ')
         if content[0] == '@':
             if self.check_string(content, ind):
+                content = content[2:-1]
                 if name != "":
-                    self.vars.append({"type": "str", "name": name, "content": content})
+                    add_to.append({"type": "str", "name": name, "content": content})
                 else:
-                    self.vars[-1]["content"].append({"type": "str", "content": content})
+                    add_to.append({"type": "str", "content": content})
                 return ind
         elif content[0].isdigit():
             if self.check_numeral(content, ind):
                 if name != "":
-                    self.vars.append({"type": "int", "name": name, "content": content})
+                    add_to.append({"type": "int", "name": name, "content": int(content)})
                 else:
-                    self.vars[-1]["content"].append({"type": "int", "content": content})
+                    add_to.append({"type": "int", "content": int(content)})
                 return ind
         elif content[0] == '{':
-            if name != "":
-                self.vars.append({"type": "mas", "content": []})
-            else:
-                self.vars[-1].append({"type": "mas", "content": []})
-            ind_end = self.mas_handler(content, ind)
+            add_to.append({"type": "mas", "name": name, "content": []})
 
+            ind_end = self.mas_handler(add_to[-1]["content"], content, ind)
+            return ind_end
 
     def reader(self) -> None:
         i = 0
         while i < len(self.data):
-            print(self.data[i])
+            # print(self.data[i])
             if self.data[i] == "<!--":
                 i = self.comment_handler(i)
             elif self.data[i][0].isalpha():
@@ -97,7 +131,7 @@ class Solution:
                     crash_handler(err)
 
                 name, content = line.split(':')
-                self.content_handler(name, content, i)
+                self.content_handler(self.vars, content, i, name)
             i += 1
 
 
