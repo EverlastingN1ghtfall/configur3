@@ -38,8 +38,9 @@ def mas_split(line: str) -> list:
 
 class Solution:
     vars = []
+    consts = []
 
-    def __init__(self, lines: str):
+    def __init__(self, lines: str) -> None:
         self.data = lines.splitlines()
 
         self.reader()
@@ -68,13 +69,12 @@ class Solution:
         i = 0
         cur_line = ind
         while i < len(contains):
-            contains[i] = contains[i].lstrip(' ').rstrip(' ')
+            el = contains[i].lstrip(' ').rstrip(' ')
             if i == len(contains) - 1:
-                new_line = self.content_handler(add_to, contains[i][:-1], cur_line, "")
-            else:
-                new_line = self.content_handler(add_to, contains[i], cur_line, "")
+                el = el[:-1]
+            new_line = self.content_handler(add_to, el, cur_line, "")
             if cur_line != new_line:
-                i = 0
+                i = 1
                 cur_line = new_line
                 contains = mas_split(self.data[new_line])
             i += 1
@@ -82,7 +82,10 @@ class Solution:
         if contains[-1][-1] != '}':
             err = "Syntax error. Could not find }" + f". Line {cur_line+1}: '{self.data[cur_line]}'"
             crash_handler(err)
+
         return cur_line
+
+    def dict_handler(self, add_to: list, ind: int) -> int:
 
 
     def comment_handler(self, ind: int) -> int: # returns line index where comment ends
@@ -105,6 +108,7 @@ class Solution:
         if name != "" and not check_name(name):
             err = f"Invalid variable name (line {ind+1}): '{name}'"
             crash_handler(err)
+
         content = content.lstrip(' ').rstrip(' ')
         if content[0] == '@':
             if self.check_string(content, ind):
@@ -112,17 +116,28 @@ class Solution:
 
                 add_to.append({"type": "str", "name": name, "content": content})
                 return ind
+
         elif content[0].isdigit():
             if self.check_numeral(content, ind):
                 add_to.append({"type": "int", "name": name, "content": int(content)})
                 return ind
+
         elif content[0] == '{':
             add_to.append({"type": "mas", "name": name, "content": []})
 
             ind_end = self.mas_handler(add_to[-1]["content"], content, ind)
             return ind_end
+
+        elif content == '$[':
+            add_to.append({"type": "dict", "name": name, "content": []})
+
+            ind_end = self.dict_handler(add_to[-1]["content"], ind)
+
+        elif content[0] == '|':
+            todo_const_hander = 0
         else:
-            return ind
+            err = f"Runtime Exception. Unhandled line/content. Line {ind+1}: '{self.data[ind]}'"
+            crash_handler(err)
 
     def reader(self) -> None:
         i = 0
@@ -131,6 +146,7 @@ class Solution:
             if self.data[i] != "":
                 if self.data[i] == "<!--":
                     i = self.comment_handler(i)
+
                 elif self.data[i][0].isalpha():
                     line = self.data[i]
                     col_ind = line.find(':')
@@ -138,19 +154,43 @@ class Solution:
                         err = f"Invalid syntax. Should be assignment, but : was not found. Line {i+1}: '{line}'"
                         crash_handler(err)
 
-                    name, content = line.split(':')
+                    cln = line.find(':')
+                    name, content = line[:cln], line[cln+1:]
                     name = name.rstrip(' ')
                     if name == "":
                         err = f"Naming error. Name can not be empty. Line {i+1}: '{self.data[i]}'"
                         crash_handler(err)
 
                     i = self.content_handler(self.vars, content, i, name)
+
+                elif self.data[i][0] == '(':
+                    line = self.data[i]
+                    line = line[1:].lstrip(' ').rstrip(' ')
+                    if line[1:4] != "def":
+                        err = f"Invalid syntax. Incorrect constant decloration. Line {i+1}: '{self.data[i]}'"
+                        crash_handler(err)
+
+                    line = line[3:].lstrip(' ')
+                    spc = line.find(' ')
+                    name, content = line[:spc], line[spc+1:]
+
+                    name = name.rstrip(' ')
+                    if name == "":
+                        err = f"Naming error. Name can not be empty. Line {i+1}: '{self.data[i]}'"
+                        crash_handler(err)
+
+                    i = self.content_handler(self.consts, content, i, name)
+                    line = self.data[i].rstrip(' ')
+                    if line[-2:] != ");":
+                        err = f"Invalid syntax. Incorrect constant decloration. Line {i+1}: '{self.data[i]}'"
+                        crash_handler(err)
+
             # print(type(i), i)
             i += 1
 
 
 if __name__ == "__main__":
-    path = "test_hard_mases.txt"
+    path = "test_basic1.txt"
     with open(path, 'r', encoding='utf-8') as f:
         data = f.read()
 
