@@ -1,5 +1,4 @@
 import re
-from io import TextIOWrapper
 
 
 def crash_handler(err: str):
@@ -46,6 +45,54 @@ def check_sorting_mas(mas: list) -> bool:
             err = "Runtime exception. Sorting lists with data types, other than integer, is not supported."
             crash_handler(err)
     return True
+
+def export_int(record: dict, depth: int = 1) -> str:
+    if record["name"] != "":
+        to_write = '\t' * depth + '"' + record["name"] + '": ' + str(record["content"]) + ', '
+    else:
+        to_write = str(record["content"]) + ", "
+    return to_write
+
+def export_string(record: dict, depth: int = 1) -> str:
+    if record["name"] != "":
+        to_write = '\t' * depth + '"' + record["name"] + '": "' + record["content"] + '", '
+    else:
+        to_write = '"' + record["content"] + '", '
+    return to_write
+
+def export_dict(record: dict, depth: int = 1):
+    if record["name"] != "":
+        to_write = '\t' * depth + '"' + record["name"] + '": {\n'
+    else:
+        to_write = '{\n'
+    for i in record["content"]:
+        if i["type"] == "int":
+            to_write += export_int(i, depth + 1) + '\n'
+        elif i["type"] == "str":
+            to_write += export_string(i, depth + 1) + '\n'
+        elif i["type"] == "mas":
+            to_write += export_mas(i, depth + 1) + '\n'
+        elif i["type"] == "dict":
+            to_write += export_dict(i, depth + 1) + '\n'
+    to_write = to_write[:-3] + '\n' + '\t' * depth + '}, '
+    return to_write
+
+def export_mas(record: dict, depth: int = 1) -> str:
+    if record["name"] != "":
+        to_write = '\t' * depth + '"' + record["name"] + '": ['
+    else:
+        to_write = '['
+    for i in record["content"]:
+        if i["type"] == "int":
+            to_write += export_int(i)
+        elif i["type"] == "str":
+            to_write += export_string(i)
+        elif i["type"] == "mas":
+            to_write += export_mas(i)
+        elif i["type"] == "dict":
+            to_write += export_dict(i)
+    to_write = to_write[:-2] + '], '
+    return to_write
 
 class Solution:
     vars = []
@@ -320,38 +367,31 @@ class Solution:
             # print(type(i), i)
             i += 1
 
-    def export_int(self, record: dict, depth: int = 1) -> None:
-        if record["name"] != "":
-            self.out.write('\t' * depth + record["name"] + ': ' + record["content"])
-        else:
-            self.out.write(f', {record["content"]}')
-
-    def export_string(self, record: dict, depth: int = 1) -> None:
-        if record["name"] != "":
-            self.out.write('\t' * depth + record["name"] + ': "' + record["content"] + '"')
-        else:
-            self.out.write(f', "{record["content"]}"')
-
-    def export_mas(self, record: dict, depth: int = 1) -> None:
-        f.write('\t' * depth + record["name"] + ': [')
-        for i in record["content"]:
-
-
     def export_to_json(self, output_path: str) -> None:
-        self.out = open(output_path, 'w')
-        self.out.write("{\n")
-        for i in self.vars:
-            if i["type"] == "int":
-                self.export_int(i)
-            elif i["type"] == "str":
-                self.export_string(i)
-            elif i["type"] == "mas":
-                self.export_mas(i)
+        f = open(output_path, 'w', encoding='utf-8')
+        f.write("{\n")
+        for i in range(len(self.vars)):
+            rec = self.vars[i]
+            if rec["type"] == "int":
+                to_write = export_int(rec) + '\n'
+            elif rec["type"] == "str":
+                to_write = export_string(rec) + '\n'
+            elif rec["type"] == "mas":
+                to_write = export_mas(rec) + '\n'
+            elif rec["type"] == "dict":
+                to_write = export_dict(rec) + '\n'
+
+            if i != len(self.vars) - 1 and rec["type"] != "comment":
+                f.write(to_write)
+        f.write(to_write[:-3] + '\n}')
+        f.close()
+
 
 if __name__ == "__main__":
-    path = "test_consts.txt"
+    path = "test_hard_mases.txt"
     with open(path, 'r', encoding='utf-8') as f:
         data = f.read()
 
     sol = Solution(data)
     print(sol.vars)
+    sol.export_to_json("output.json")
