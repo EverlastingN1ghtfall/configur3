@@ -2,18 +2,19 @@
 Это многострочный
 комментарий
 -->
-VAR : 5
-TESTLIST : { 1, 2, 3, 4, 5, 6 }
-STRING : @"Это строка"
-INT : 15
+(def VAR 5);
+(def TESTLIST { 1, 2, 3, 4, 5, 6 });
+(def STRING @"Это строка");
+(def INT 15);
 <!--
 Это
 тоже
 многострочный
 комментарий
 -->
-DICT : $[
-    SOMESTR : @"abc"
-    DATA : @"def"
-    PATH : @"ghi"
-]
+(def DICT $[
+    SOMESTR : @"abc",
+    DATA : @"def",
+
+    PATH : @"ghi",
+]);

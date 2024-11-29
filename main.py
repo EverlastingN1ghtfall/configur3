@@ -38,7 +38,6 @@ def mas_split(line: str) -> list:
 
 class Solution:
     vars = []
-    consts = []
 
     def __init__(self, lines: str) -> None:
         self.data = lines.splitlines()
@@ -63,14 +62,32 @@ class Solution:
             crash_handler(err)
         return True
 
+    def check_comas(self, start: int, end: int) -> None:
+        cur_line = start + 1
+        while cur_line < end:
+            line = self.data[cur_line]
+            line = line.rstrip(' ')
+            if line == "" or line[-1] == '[' or line.find(':') == -1:
+                cur_line += 1
+                continue
+            if line[-1] != ',':
+                err = f"Invalid syntax. Expected ','. Line {cur_line+1}: '{line}'"
+                crash_handler(err)
+
+            cur_line += 1
+
     def mas_handler(self, add_to: list, content: str, ind: int) -> int:
         contains = mas_split(content)
         contains[0] = contains[0][1:]
+        shift = -1
         i = 0
         cur_line = ind
         while i < len(contains):
             el = contains[i].lstrip(' ').rstrip(' ')
-            if i == len(contains) - 1:
+            if i == len(contains) - 1 and el != "$[":
+                if el[-2:] == ");":
+                    shift = -3
+                    el = el[:-2]
                 el = el[:-1]
             new_line = self.content_handler(add_to, el, cur_line, "")
             if cur_line != new_line:
@@ -79,21 +96,48 @@ class Solution:
                 contains = mas_split(self.data[new_line])
             i += 1
 
-        if contains[-1][-1] != '}':
-            err = "Syntax error. Could not find }" + f". Line {cur_line+1}: '{self.data[cur_line]}'"
+        if contains[-1][shift] != '}':
+            err = "Syntax error. Missing closing" + f". Line {cur_line+1}: '{self.data[cur_line]}'"
             crash_handler(err)
 
         return cur_line
 
     def dict_handler(self, add_to: list, ind: int) -> int:
+        cur_line = ind + 1
+        while cur_line < len(self.data):
+            line = self.data[cur_line].lstrip('\t ')
+            if line == "":
+                cur_line += 1
+                continue
+            if line[0] == ']':
+                self.check_comas(ind, cur_line)
+                return cur_line
+            col = line.find(':')
+            if col == -1:
+                err = f"Syntax error. Expected ':'. Line {cur_line+1}: '{self.data[cur_line]}'"
+                crash_handler(err)
 
+            name, content = line[:col], line[col+1:]
+            name = name.lstrip(' ').rstrip(' ')
+            content = content.rstrip(' ')
+            if content[-1] == ',':
+                content = content[:-1]
+            if name == "":
+                err = f"Naming error. Name can not be empty. Line {cur_line+1}: '{self.data[cur_line]}'"
+                crash_handler(err)
+            cur_line = self.content_handler(add_to, content, cur_line, name)
+
+            cur_line += 1
+
+        err = f"Invalid syntax. No ']' was found for dict started on line {ind+1}"
+        crash_handler(err)
 
     def comment_handler(self, ind: int) -> int: # returns line index where comment ends
         comment = []
         for i in range(ind + 1, len(self.data)):
             if "-->" in self.data[i]:
                 if self.data[i] != "-->":
-                    err = f"Closing symbol (-->) should be on a separate line. Line {i+1}: '{self.data[i]}'"
+                    err = f"Invalid syntax. Closing symbol (-->) should be on a separate line. Line {i+1}: '{self.data[i]}'"
                     crash_handler(err)
 
                 self.vars.append({"type": "comment", "data": comment})
@@ -132,6 +176,7 @@ class Solution:
             add_to.append({"type": "dict", "name": name, "content": []})
 
             ind_end = self.dict_handler(add_to[-1]["content"], ind)
+            return ind_end
 
         elif content[0] == '|':
             todo_const_hander = 0
@@ -147,42 +192,32 @@ class Solution:
                 if self.data[i] == "<!--":
                     i = self.comment_handler(i)
 
-                elif self.data[i][0].isalpha():
+                elif self.data[i][0] == '(':
                     line = self.data[i]
-                    col_ind = line.find(':')
-                    if col_ind == -1:
-                        err = f"Invalid syntax. Should be assignment, but : was not found. Line {i+1}: '{line}'"
+                    line = line[1:].lstrip(' ').rstrip(' ')
+                    if line[0:3] != "def":
+                        err = f"Invalid syntax. Incorrect constant declaration1. Line {i+1}: '{self.data[i]}'"
                         crash_handler(err)
 
-                    cln = line.find(':')
-                    name, content = line[:cln], line[cln+1:]
+                    line = line[3:].lstrip(' ')
+                    spc = line.find(' ')
+                    if spc == -1:
+                        err = f"Invalid syntax. Incorrect constant declaration2. Line {i + 1}: '{self.data[i]}'"
+                        crash_handler(err)
+                    name, content = line[:spc], line[spc+1:]
+                    content = content.lstrip(' ').rstrip(' ')
+                    if content.find("$[") == -1:
+                        content = content[:-2]
+
                     name = name.rstrip(' ')
                     if name == "":
                         err = f"Naming error. Name can not be empty. Line {i+1}: '{self.data[i]}'"
                         crash_handler(err)
 
                     i = self.content_handler(self.vars, content, i, name)
-
-                elif self.data[i][0] == '(':
-                    line = self.data[i]
-                    line = line[1:].lstrip(' ').rstrip(' ')
-                    if line[1:4] != "def":
-                        err = f"Invalid syntax. Incorrect constant decloration. Line {i+1}: '{self.data[i]}'"
-                        crash_handler(err)
-
-                    line = line[3:].lstrip(' ')
-                    spc = line.find(' ')
-                    name, content = line[:spc], line[spc+1:]
-
-                    name = name.rstrip(' ')
-                    if name == "":
-                        err = f"Naming error. Name can not be empty. Line {i+1}: '{self.data[i]}'"
-                        crash_handler(err)
-
-                    i = self.content_handler(self.consts, content, i, name)
                     line = self.data[i].rstrip(' ')
                     if line[-2:] != ");":
-                        err = f"Invalid syntax. Incorrect constant decloration. Line {i+1}: '{self.data[i]}'"
+                        err = f"Invalid syntax. Incorrect constant declaration3. Line {i + 1}: '{self.data[i]}'"
                         crash_handler(err)
 
             # print(type(i), i)

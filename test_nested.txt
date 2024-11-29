@@ -1,0 +1,13 @@
+(def TESTONE $[
+    NESTEDONE : $[
+        NESTEDTWO : $[
+            NESTEDTHREE : $[
+                PATH : @"C:/Users/",
+            ]
+        ]
+    ]
+]);
+(def TESTTWO { 15, $[
+    NUMBER : 5,
+    STR : @"ABCD",
+], 45, @"on another line"});
