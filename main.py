@@ -1,3 +1,6 @@
+import re
+
+
 def crash_handler(err: str):
     print(err)
     exit(-1)
@@ -148,6 +151,26 @@ class Solution:
         err = f"Closing symbol for <!-- (line {ind+1}) not found"
         crash_handler(err)
 
+    def check_op(self, content: str, ind: int) -> bool:
+        if content[0] != '|' or content[-1] != '|':
+            err = f"Syntax error. Missing '|'. Line {ind+1}: '{self.data[ind]}'"
+            crash_handler(err)
+        if content.count('|') > 2:
+            err = f"Syntax error. Too many '|'. Line {ind+1}: '{self.data[ind]}'"
+            crash_handler(err)
+        add = content.count('+')
+        sub = content.count('-')
+        mult = content.count('*')
+        if add + sub + mult > 1:
+            err = f"Syntax error. Unrecognized operator. Line {ind+1}: '{self.data[ind]}'"
+            crash_handler(err)
+        content.lstrip('|').rstrip('|')
+        if add + sub + mult == 0:
+            if not re.fullmatch("sort([A-Z]+)", content):
+                err = f"Syntax error. Unrecognized operator. Line {ind + 1}: '{self.data[ind]}'"
+                crash_handler(err)
+        return True
+
     def content_handler(self, add_to: list, content: str, ind: int, name: str) -> int:
         if name != "" and not check_name(name):
             err = f"Invalid variable name (line {ind+1}): '{name}'"
@@ -179,7 +202,9 @@ class Solution:
             return ind_end
 
         elif content[0] == '|':
-            todo_const_hander = 0
+            if self.check_op(content, ind):
+
+
         else:
             err = f"Runtime Exception. Unhandled line/content. Line {ind+1}: '{self.data[ind]}'"
             crash_handler(err)
