@@ -86,11 +86,12 @@ $[
 
 Входной файл:
 
-![image](https://github.com/user-attachments/assets/da3cefb3-9294-4125-8cdd-81ae38141e54)
+![image](https://github.com/user-attachments/assets/44b202b3-1d2f-4634-b084-6fae29386193)
+
 
 Выходной файл:
 
-!
+![image](https://github.com/user-attachments/assets/7e2fc617-3b9e-43ab-b672-5c4be0e61fc0)
 
 ## **Тестирование**
 
