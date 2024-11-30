@@ -1,4 +1,5 @@
 import re
+from io import TextIOWrapper
 
 
 def crash_handler(err: str):
@@ -186,7 +187,7 @@ class Solution:
                 crash_handler(err)
         return True
 
-    def content_handler(self, add_to: list, content: str, ind: int, name: str) -> int:
+    def content_handler(self, add_to: list[dict], content: str, ind: int, name: str) -> int:
         if name != "" and not check_name(name):
             err = f"Invalid variable name (line {ind+1}): '{name}'"
             crash_handler(err)
@@ -312,12 +313,40 @@ class Solution:
                         err = f"Invalid syntax. Incorrect constant declaration3. Line {i + 1}: '{self.data[i]}'"
                         crash_handler(err)
 
+                else:
+                    err = f"Runtime Exception. Unhandled line content. Line {i + 1}: '{self.data[i]}'"
+                    crash_handler(err)
+
             # print(type(i), i)
             i += 1
 
-    # def export_to_json(self):
+    def export_int(self, record: dict, depth: int = 1) -> None:
+        if record["name"] != "":
+            self.out.write('\t' * depth + record["name"] + ': ' + record["content"])
+        else:
+            self.out.write(f', {record["content"]}')
+
+    def export_string(self, record: dict, depth: int = 1) -> None:
+        if record["name"] != "":
+            self.out.write('\t' * depth + record["name"] + ': "' + record["content"] + '"')
+        else:
+            self.out.write(f', "{record["content"]}"')
+
+    def export_mas(self, record: dict, depth: int = 1) -> None:
+        f.write('\t' * depth + record["name"] + ': [')
+        for i in record["content"]:
 
 
+    def export_to_json(self, output_path: str) -> None:
+        self.out = open(output_path, 'w')
+        self.out.write("{\n")
+        for i in self.vars:
+            if i["type"] == "int":
+                self.export_int(i)
+            elif i["type"] == "str":
+                self.export_string(i)
+            elif i["type"] == "mas":
+                self.export_mas(i)
 
 if __name__ == "__main__":
     path = "test_consts.txt"
