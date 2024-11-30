@@ -39,6 +39,13 @@ def mas_split(line: str) -> list:
         out.append(buff)
     return out
 
+def check_sorting_mas(mas: list) -> bool:
+    for i in mas:
+        if i["type"] != "int":
+            err = "Runtime exception. Sorting lists with data types, other than integer, is not supported."
+            crash_handler(err)
+    return True
+
 class Solution:
     vars = []
 
@@ -46,6 +53,15 @@ class Solution:
         self.data = lines.splitlines()
 
         self.reader()
+
+    def find_mas(self, name: str, type: str) -> int:
+        for i in range(len(self.vars)):
+            var = self.vars[i]
+            var_name = var["name"]
+            var_type = var["type"]
+            if var_name == name and var_type == type:
+                return i
+        return -1
 
     def check_string(self, content: str, ind: int) -> bool:
         if content[1] != '"':
@@ -60,7 +76,7 @@ class Solution:
         return True
 
     def check_numeral(self, content: str, ind: int) -> bool:
-        if not content.isdigit():
+        if not re.fullmatch("-?[0-9]+", content):
             err = f"Invalid syntax. Invalid numeral: '{content}'. Line {ind+1}: '{self.data[ind]}'"
             crash_handler(err)
         return True
@@ -164,10 +180,9 @@ class Solution:
         if add + sub + mult > 1:
             err = f"Syntax error. Unrecognized operator. Line {ind+1}: '{self.data[ind]}'"
             crash_handler(err)
-        content.lstrip('|').rstrip('|')
         if add + sub + mult == 0:
-            if not re.fullmatch("sort([A-Z]+)", content):
-                err = f"Syntax error. Unrecognized operator. Line {ind + 1}: '{self.data[ind]}'"
+            if not re.fullmatch("(\|sort\([A-Z]+\)\|)", content):
+                err = f"Syntax error. Unrecognized operator/invalid variable name (sort?). Line {ind + 1}: '{self.data[ind]}'"
                 crash_handler(err)
         return True
 
@@ -184,7 +199,7 @@ class Solution:
                 add_to.append({"type": "str", "name": name, "content": content})
                 return ind
 
-        elif content[0].isdigit():
+        elif content[0].isdigit() or content[0] == '-':
             if self.check_numeral(content, ind):
                 add_to.append({"type": "int", "name": name, "content": int(content)})
                 return ind
@@ -203,10 +218,62 @@ class Solution:
 
         elif content[0] == '|':
             if self.check_op(content, ind):
+                content = content[1:-1]
+                if content.find("sort(") != -1:
+                    for_sorting = content[5:-1]
+                    index = self.find_mas(for_sorting, "mas")
+                    if index == -1:
+                        err = f"Runtime exception. Variable {for_sorting} was not find or has wrong data type. Line {ind+1}: '{self.data[ind]}'"
+                        crash_handler(err)
+                    for_sorting = self.vars[index]["content"].copy()
+                    if check_sorting_mas(for_sorting):
+                        for_sorting.sort(key=lambda x: x["content"])
 
+                    add_to.append({"type": "mas", "name": name, "content": for_sorting})
+                else:
+                    if content.find('+') != -1:
+                        symb = '+'
+                    elif content.find('*') != -1:
+                        symb = '*'
+                    elif content.find('-') != -1:
+                        symb = '-'
+                    else:
+                        symb = "how"
+                    l, r = content.split(symb)
+                    l = l.lstrip(' ').rstrip(' ')
+                    r = r.lstrip(' ').rstrip(' ')
+
+                    if not l.isdigit():
+                        index = self.find_mas(l, "int")
+                        if index == -1:
+                            err = f"Runtime exception. Variable {l} was not find or has wrong data type. Line {ind+1}: '{self.data[ind]}'"
+                            crash_handler(err)
+                        l = self.vars[index]["content"]
+                    else:
+                        l = int(l)
+                    if not r.isdigit():
+                        index = self.find_mas(r, "int")
+                        if index == -1:
+                            err = f"Runtime exception. Variable {r} was not find or has wrong data type. Line {ind+1}: '{self.data[ind]}'"
+                            crash_handler(err)
+                        r = self.vars[index]["content"]
+                    else:
+                        r = int(r)
+
+                    if symb == "+":
+                        result = l + r
+                    elif symb == "*":
+                        result = l * r
+                    elif symb == '-':
+                        result = l - r
+                    else:
+                        result = "HOW"
+                    add_to.append({"type": "int", "name": name, "content": result})
+
+                return ind
 
         else:
-            err = f"Runtime Exception. Unhandled line/content. Line {ind+1}: '{self.data[ind]}'"
+            err = f"Runtime Exception. Unhandled line content: {content}. Line {ind+1}: '{self.data[ind]}'"
             crash_handler(err)
 
     def reader(self) -> None:
@@ -248,9 +315,12 @@ class Solution:
             # print(type(i), i)
             i += 1
 
+    # def export_to_json(self):
+
+
 
 if __name__ == "__main__":
-    path = "test_basic1.txt"
+    path = "test_consts.txt"
     with open(path, 'r', encoding='utf-8') as f:
         data = f.read()
 

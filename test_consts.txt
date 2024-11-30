@@ -1,0 +1,8 @@
+(def CONST 7);
+(def ADDTEST |CONST + 3|);
+(def SUBTEST |CONST - 3|);
+(def MULTTEST |CONST * 3|);
+(def FORMULT 10);
+(def MULTOFCONSTS |CONST * FORMULT|);
+(def TESTMAS { 1, 7, 2, 4, 3, 10, -3, 5, 55 });
+(def SORT |sort(TESTMAS)|);
