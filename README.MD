@@ -86,7 +86,7 @@ $[
 
 Входной файл:
 
-!
+![image](https://github.com/user-attachments/assets/da3cefb3-9294-4125-8cdd-81ae38141e54)
 
 Выходной файл:
 
