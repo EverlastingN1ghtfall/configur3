@@ -1,4 +1,5 @@
 import re
+import argparse
 
 
 def crash_handler(err: str):
@@ -388,10 +389,35 @@ class Solution:
 
 
 if __name__ == "__main__":
-    path = "test_hard_mases.txt"
-    with open(path, 'r', encoding='utf-8') as f:
-        data = f.read()
+    mode = 0 # O - cmd application; 1 - work with hardcoded file; 2 - work with desired file; 3 - exact line testing
+    if mode == 0:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-i")
+        parser.add_argument("-o")
 
-    sol = Solution(data)
-    print(sol.vars)
-    sol.export_to_json("output.json")
+        args = parser.parse_args()
+        input_file = args.i
+        output_file = args.o
+
+        with open(input_file, 'r', encoding='utf-8') as f:
+            data = f.read()
+        sol = Solution(data)
+        sol.export_to_json(output_file)
+    elif mode == 1:
+        path = "test_hard_mases.txt"
+        with open(path, 'r', encoding='utf-8') as f:
+            data = f.read()
+        sol = Solution(data)
+        print(sol.vars)
+        sol.export_to_json("output.json")
+    elif mode == 2:
+        path = input()
+        with open(path, 'r', encoding='utf-8') as f:
+            data = f.read()
+        sol = Solution(data)
+        print(sol.vars)
+        sol.export_to_json("output.json")
+    elif mode == 3:
+        line = input()
+        sol = Solution(line)
+        print(sol.vars)
