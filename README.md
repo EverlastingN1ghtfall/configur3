@@ -95,6 +95,9 @@ $[
 
 ## **Тестирование**
 
-!
+![image](https://github.com/user-attachments/assets/606bb6c9-791f-4c3a-9e01-e5836cc9e190)
+![image](https://github.com/user-attachments/assets/93076f31-7f26-46c8-ac40-a975d65c2903)
+![image](https://github.com/user-attachments/assets/92980b4e-7f0c-45d6-9dc7-ed2b0595d899)
+![image](https://github.com/user-attachments/assets/34bdd43b-2b76-4733-8e7e-2a290b24abe6)
 
 repo url: https://github.com/EverlastingN1ghtfall/configur3
