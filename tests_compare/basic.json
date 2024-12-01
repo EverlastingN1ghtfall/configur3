@@ -1,0 +1,11 @@
+{
+	"VAR": 5, 
+	"TESTLIST": [1, 2, 3, 4, 5, 6], 
+	"STRING": "Это строка", 
+	"INT": 15, 
+	"DICT": {
+		"SOMESTR": "abc", 
+		"DATA": "def", 
+		"PATH": "ghi"
+	}
+}

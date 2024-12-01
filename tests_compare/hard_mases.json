@@ -1,0 +1,5 @@
+{
+	"TESTONE": [42, 93, "abcde}", ["new mas", "{not a mas}", 33], 92, "{fake opener", 11], 
+	"TESTTWO": ["{ testing, splitter, with, comas}", [[["multiple nested lists"]]]], 
+	"TESTTHREE": [11, 12, 13, [[14, 15], 16, [[17, 18, [19, 20]], 21], 22, 23, [[24, 25]]]]
+}

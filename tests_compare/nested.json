@@ -1,0 +1,15 @@
+{
+	"TESTONE": {
+		"NESTEDONE": {
+			"NESTEDTWO": {
+				"NESTEDTHREE": {
+					"PATH": "C:/Users/"
+				}
+			}
+		}
+	}, 
+	"TESTTWO": [15, {
+		"NUMBER": 5, 
+		"STR": "ABCD"
+	}, "on another line"]
+}

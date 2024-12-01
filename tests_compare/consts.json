@@ -1,0 +1,10 @@
+{
+	"CONST": 7, 
+	"ADDTEST": 10, 
+	"SUBTEST": 4, 
+	"MULTTEST": 21, 
+	"FORMULT": 10, 
+	"MULTOFCONSTS": 70, 
+	"TESTMAS": [1, 7, 2, 4, 3, 10, -3, 5, 55], 
+	"SORT": [-3, 1, 2, 3, 4, 5, 7, 10, 55]
+}
