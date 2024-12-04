@@ -347,7 +347,7 @@ class Solution:
                         crash_handler(err)
                     name, content = line[:spc], line[spc+1:]
                     content = content.lstrip(' ').rstrip(' ')
-                    if content.find("$[") == -1:
+                    if content.endswith(');'):
                         content = content[:-2]
 
                     name = name.rstrip(' ')
@@ -389,7 +389,7 @@ class Solution:
 
 
 if __name__ == "__main__":
-    mode = 1 # O - cmd application; 1 - work with hardcoded file; 2 - work with desired file; 3 - exact line testing
+    mode = 0 # O - cmd application; 1 - work with hardcoded file; 2 - work with desired file; 3 - exact line testing
     if mode == 0:
         parser = argparse.ArgumentParser()
         parser.add_argument("-i")
@@ -404,12 +404,12 @@ if __name__ == "__main__":
         sol = Solution(data)
         sol.export_to_json(output_file)
     elif mode == 1:
-        path = "tests_compare/test_nested.txt"
+        path = "tests_compare/test_basic1.txt"
         with open(path, 'r', encoding='utf-8') as f:
             data = f.read()
         sol = Solution(data)
         print(sol.vars)
-        sol.export_to_json("nested.json")
+        sol.export_to_json("output.json")
     elif mode == 2:
         path = input()
         with open(path, 'r', encoding='utf-8') as f:
