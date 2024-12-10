@@ -404,7 +404,7 @@ if __name__ == "__main__":
         sol = Solution(data)
         sol.export_to_json(output_file)
     elif mode == 1:
-        path = "tests_compare/test_basic1.txt"
+        path = "tests_compare/test_consts.txt"
         with open(path, 'r', encoding='utf-8') as f:
             data = f.read()
         sol = Solution(data)

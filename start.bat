@@ -1,0 +1,1 @@
+main.py -i tests_compare/test_basic1.txt -o output.json
